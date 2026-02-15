@@ -5,22 +5,34 @@ import Entities.Faculty;
 import Entities.Specialization;
 import Entities.StudentGroup;
 import Entities.StudyHours;
+import ImportDataFromCSV.ImportException;
+import ImportDataFromCSV.Importer;
 import UseDB.Reader;
 import UseDB.Writer;
+import com.opencsv.exceptions.CsvValidationException;
 import io.bretty.console.table.Table;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Precision;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Vector;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class App
 {
     static Reader r;
     static Writer w;
     static Scanner in;
+    static Importer importer;
+
     public static void main( String[] args ) {
         String url = "jdbc:postgresql://localhost:5432/mybd";
         String user = "victor";
@@ -34,7 +46,7 @@ public class App
         }
          r = new Reader(conn);
          w = new Writer(conn);
-
+        importer = new Importer();
         while(true){
             Vector<Faculty> faculties = r.getFacultyList();
             System.out.println("--------------------------------------");
@@ -50,6 +62,7 @@ public class App
             System.out.println("--------------------------------------");
             System.out.println("\n\nwrite \\choose to show specializations for some faculty.");
             System.out.println("write \\add to add faculty.");
+            System.out.println("write \\import to import faculties.");
             System.out.println("write \\exit to cancel the program.\n\n");
 
             String response = in.nextLine();
@@ -72,6 +85,7 @@ public class App
                         }
                         if(num<1 || num>faculties.size()){
                             System.out.println("Number out of bounds.");
+                            continue;
                         }
                         break;
                     }
@@ -85,6 +99,28 @@ public class App
                         result = w.addFaculty(name);
                     } while(result == 0);
                     System.out.println("Success!\n\n");
+                }
+                case "\\import" -> {
+                    //вызов функции импорта - получение нужного файла - вызов нужного метода из импортера
+                    Path file = ImportMenu();
+                    if (file == null) continue;
+                    try {
+                        Vector<Faculty> importFaculties= importer.importFaculties(file);
+
+                        int total_added =0;
+                        int result=0;
+                        for(Faculty f : importFaculties){
+                            result = w.addFaculty(f.name());
+                            if(result != 0) total_added++;
+                        }
+
+                        if(total_added!=0)
+                            System.out.println("File\t"+file.getFileName().toString()+"\tsuccessfully imported!\n Total imported files - "+total_added);
+                        else
+                            System.out.println("None of faculties from file have been imported.");
+                    } catch (ImportException | CsvValidationException | IOException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
                 case "\\exit"->{
                    return;
@@ -134,6 +170,7 @@ public class App
                         }
                         if(num<1 || num>specs.size()){
                             System.out.println("Number out of bounds.");
+                            continue;
                         }
                         break;
                     }
@@ -352,5 +389,91 @@ public class App
         }
     }
 
+    public static Path ImportMenu(){
+
+        while (true) {
+            System.out.printf("""
+                                Current folder: %s
+                                write \\path to change folder.
+                                write \\select to choose a file.
+                                write \\back to show faculties.
+                                Support types: CSV \n""", importer.getPath().toAbsolutePath());
+
+            String import_response = in.nextLine().trim();
+
+            switch (import_response) {
+                case "\\path" -> {
+
+                    try (Stream<Path> stream = Files.list(importer.getPath())) {
+                        System.out.println("Folders in current folder:");
+                        List<Path> Directories = stream
+                                .filter(p -> Files.isDirectory(p))
+                                .toList();
+
+                        if (Directories.isEmpty()) {
+                            System.out.println("No subfolders in current folder.");
+                        } else {
+                            AtomicInteger i = new AtomicInteger(1);
+                            Directories.forEach(name -> {
+                                int idx = i.getAndIncrement();
+
+                                System.out.print(name.getFileName().toString() + (idx % 5 != 0 ? '\t' : '\n'));
+                            });
+                        }
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+
+                    System.out.println("\nEnter new folder path:\t");
+                    String newPathStr = in.nextLine().trim();
+                    Path folder;
+                    Path newPath = Paths.get(newPathStr);
+                    if (newPath.isAbsolute()) {
+                        folder = newPath.normalize();
+                    } else {
+                        folder = importer.getPath().resolve(newPath).normalize();
+                    }
+
+                    if (!Files.isDirectory(folder)) {
+                        System.out.println("Written path is not a directory! " + folder);
+                        continue;
+                    }
+
+                    importer.setPath(folder.normalize());
+                    System.out.println("Path changed successfully!");
+                }
+                case "\\select" -> {
+
+                    try (Stream<Path> stream = Files.list(importer.getPath())) {
+                        AtomicInteger i = new AtomicInteger(1);
+
+                        stream
+                                .map(p -> p.getFileName().toString())
+                                .forEach(name -> {
+                                    int idx = i.getAndIncrement();
+                                    System.out.print(name + (idx % 5 != 0 ? '\t' : '\n'));
+                                });
+
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+
+
+                    System.out.println("\nEnter file name:\t");
+                    String fileName = in.nextLine().trim();
+                    Path file = importer.getPath().resolve(fileName);
+                    if(!Files.isRegularFile(file)){
+                        System.out.println("Written file name doesn't exist!");
+                        continue;
+                    }
+                    System.out.println("File was found successfully!");
+                    return file;
+                }
+                case "\\back" -> {
+                    return null;
+                }
+            }
+        }
+    }
 }
 

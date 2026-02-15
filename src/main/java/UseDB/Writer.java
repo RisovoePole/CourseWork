@@ -22,7 +22,7 @@ public class Writer {
             key.next();
             return key.getInt(1);
         } catch (Exception e) {
-            System.out.println("already exist!");
+            System.out.println("Faculty\t"+facultyName+"\talready exist!");
             return 0;
         }
     }
