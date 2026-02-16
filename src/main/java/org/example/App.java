@@ -62,7 +62,7 @@ public class App
             System.out.println("--------------------------------------");
             System.out.println("\n\nwrite \\choose to show specializations for some faculty.");
             System.out.println("write \\add to add faculty.");
-            System.out.println("write \\import to import faculties.");
+            System.out.println("write \\import to import faculties.\n");
             System.out.println("write \\exit to cancel the program.\n\n");
 
             String response = in.nextLine();
@@ -106,6 +106,7 @@ public class App
                     if (file == null) continue;
                     try {
                         Vector<Faculty> importFaculties= importer.importFaculties(file);
+                        if(importFaculties==null) continue;
 
                         int total_added =0;
                         int result=0;
@@ -115,7 +116,7 @@ public class App
                         }
 
                         if(total_added!=0)
-                            System.out.println("File\t"+file.getFileName().toString()+"\tsuccessfully imported!\n Total imported files - "+total_added);
+                            System.out.println("File\t"+file.getFileName().toString()+"\tsuccessfully imported!\n Total imported faculties - "+total_added);
                         else
                             System.out.println("None of faculties from file have been imported.");
                     } catch (ImportException | CsvValidationException | IOException e) {
@@ -147,6 +148,7 @@ public class App
             System.out.println("--------------------------------------");
             System.out.println("\n\nwrite \\choose to show details for some specialization.");
             System.out.println("write \\add to add specialization.");
+            System.out.println("write \\import to import specialization.\n");
             System.out.println("write \\back to check list of specializations");
             System.out.println("write \\exit to cancel the program.\n\n");
 
@@ -197,6 +199,30 @@ public class App
                         result = w.addSpec(name, facultyId, yearsOfStudy);
                     } while(result == 0);
                     System.out.println("Success!\n\n");
+                }
+
+                case "\\import" -> {
+                    //вызов функции импорта - получение нужного файла - вызов нужного метода из импортера
+                    Path file = ImportMenu();
+                    if (file == null) continue;
+                    try {
+                        Vector<Specialization> importSpecializations = importer.importSpecsForFaculty(file, facultyId);
+                        if(importSpecializations == null) continue;
+
+                        int total_added =0;
+                        int result=0;
+                        for(Specialization spec : importSpecializations){
+                            result = w.addSpec(spec.name(), spec.faculty_id(), spec.yearsOfStudy());
+                            if(result != 0) total_added++;
+                        }
+
+                        if(total_added!=0)
+                            System.out.println("File\t"+file.getFileName().toString()+"\tsuccessfully imported!\n Total imported specializations - "+total_added);
+                        else
+                            System.out.println("None of specializations from file have been imported.");
+                    } catch (ImportException | CsvValidationException | IOException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
                 case "\\back" ->{
                     return;
@@ -299,7 +325,7 @@ public class App
             }
             System.out.println("--------------------------------------");
             System.out.println("write \"\\add g\" to add a group.");
-            System.out.println("write \"\\add d\" to add a discipline.");
+            System.out.println("write \"\\add d\" to add a discipline.\n");
             System.out.println("write \\back to check list of specializations");
             System.out.println("write \\exit to cancel the program.\n\n");
 
@@ -396,8 +422,11 @@ public class App
                                 Current folder: %s
                                 write \\path to change folder.
                                 write \\select to choose a file.
-                                write \\back to show faculties.
-                                Support types: CSV \n""", importer.getPath().toAbsolutePath());
+                                write \\separator to change it. Current separator: "%s" \n
+                                write \\back to close this menu.
+                                Support types: CSV \n""",
+                    importer.getPath().toAbsolutePath(),
+                    importer.getSeparator());
 
             String import_response = in.nextLine().trim();
 
@@ -469,6 +498,18 @@ public class App
                     System.out.println("File was found successfully!");
                     return file;
                 }
+
+                case "\\separator" -> {
+                    System.out.println("Enter new separator (will be used first character from your input):\n");
+                    String newSeparator = in.nextLine().trim();
+                    if (!newSeparator.isEmpty()) {
+                        System.out.println("Separator has changed!");
+                        importer.setSeparator(newSeparator.charAt(0));
+                    } else {
+                        System.out.println("Separator didn't changed.");
+                    }
+                }
+
                 case "\\back" -> {
                     return null;
                 }
