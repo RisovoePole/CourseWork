@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 public record StudentGroup(Integer id,
                            String name,

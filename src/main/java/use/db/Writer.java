@@ -1,6 +1,6 @@
-package UseDB;
+package use.db;
 
-import Entities.StudyHours;
+import entities.StudyHours;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

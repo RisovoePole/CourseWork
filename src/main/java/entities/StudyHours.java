@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 public record StudyHours(Integer disciplineId,
                          Float contactStudyHours,

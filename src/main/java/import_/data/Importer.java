@@ -1,9 +1,7 @@
-package ImportDataFromCSV;
+package import_.data;
 
-import Entities.Discipline;
-import Entities.Faculty;
-import Entities.Specialization;
-import UseDB.Writer;
+import entities.Faculty;
+import entities.Specialization;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -38,7 +36,7 @@ public class Importer {
         this.separator = separator;
     }
 
-    private Integer[] findCorrespondIndexes(String[] headersFromCSV, String[] correctHeaders) throws ImportException{
+    private Integer[] findCorrespondIndexes(String[] headersFromCSV, String[] correctHeaders) throws ImportException {
         int rightHeadersLength = correctHeaders.length;
         Integer[] result = new Integer[rightHeadersLength];
         Map<String, Integer> headerIndexes = new HashMap<>();
@@ -70,7 +68,7 @@ public class Importer {
                 .build();
 
         String[] columnsNames = {"faculty name"};
-        Integer[] rightIdx = new Integer[1];
+        Integer[] rightIdx = new Integer[columnsNames.length];
 
         String[] nextLine, headers;
         if ((nextLine = reader.readNext()) != null) {
@@ -84,6 +82,7 @@ public class Importer {
         Vector<Faculty> facultyList = new Vector<>();
 
         while ((nextLine = reader.readNext()) != null) {
+            if(nextLine.length < headers.length) throw new ImportException("Not enough data on line " + reader.getLinesRead());
             String name = nextLine[rightIdx[0]];
             facultyList.add(new Faculty(null, name));
         }
@@ -101,7 +100,7 @@ public class Importer {
                 .build();
 
         String[] columnsNames = {"Specialization name", "years of study"};
-        Integer[] rightIdx = new Integer[2];
+        Integer[] rightIdx = new Integer[columnsNames.length];
 
         String[] nextLine, headers;
         if ((nextLine = reader.readNext()) != null) {

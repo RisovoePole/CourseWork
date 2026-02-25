@@ -1,21 +1,20 @@
-package org.example;
+package org.app;
 
-import Entities.Discipline;
-import Entities.Faculty;
-import Entities.Specialization;
-import Entities.StudentGroup;
-import Entities.StudyHours;
-import ImportDataFromCSV.ImportException;
-import ImportDataFromCSV.Importer;
-import UseDB.Reader;
-import UseDB.Writer;
+import entities.Discipline;
+import entities.Faculty;
+import entities.Specialization;
+import entities.StudentGroup;
+import entities.StudyHours;
+import import_.data.ImportException;
+import import_.data.Importer;
+import use.db.Reader;
+import use.db.Writer;
 import com.opencsv.exceptions.CsvValidationException;
 import io.bretty.console.table.Table;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Precision;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 public record Discipline(Integer id,
                          String name,

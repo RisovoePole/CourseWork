@@ -1,6 +1,6 @@
-package UseDB;
+package use.db;
 
-import Entities.*;
+import entities.*;
 
 import java.sql.*;
 import java.util.*;
