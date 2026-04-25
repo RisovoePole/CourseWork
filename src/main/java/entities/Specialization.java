@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 public record Specialization(Integer id,
                              String name,
