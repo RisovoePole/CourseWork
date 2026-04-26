@@ -1,4 +1,4 @@
-package import_.data;
+package import_data;
 
 public class ImportException extends RuntimeException {
     public ImportException(String message) {

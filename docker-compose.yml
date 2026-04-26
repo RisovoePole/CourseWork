@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+        POSTGRES_DB: app_db
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: pass
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:rw
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d app_db" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    container_name: app
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./src/test/Files:/app/src/Files:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data: {}

@@ -1,4 +1,4 @@
-package import_.data;
+package import_data;
 
 import entities.Faculty;
 import entities.Specialization;

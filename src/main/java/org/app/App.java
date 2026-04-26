@@ -5,8 +5,8 @@ import entities.Faculty;
 import entities.Specialization;
 import entities.StudentGroup;
 import entities.StudyHours;
-import import_.data.ImportException;
-import import_.data.Importer;
+import import_data.ImportException;
+import import_data.Importer;
 import use.db.Reader;
 import use.db.Writer;
 import com.opencsv.exceptions.CsvValidationException;
@@ -33,9 +33,9 @@ public class App
     static Importer importer;
 
     public static void main( String[] args ) {
-        String url = "jdbc:postgresql://localhost:5432/mybd";
-        String user = "victor";
-        String password = "1111";
+        String url = "jdbc:postgresql://db:5432/app_db";
+        String user = "user";
+        String password = "pass";
         in = new Scanner(System.in);
         Connection conn;
         try {

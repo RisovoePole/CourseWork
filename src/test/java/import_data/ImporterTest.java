@@ -1,12 +1,10 @@
-package import_.data;
+package import_data;
 
-import com.opencsv.exceptions.CsvValidationException;
 import entities.Faculty;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
