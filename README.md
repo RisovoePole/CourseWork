@@ -31,8 +31,6 @@ just run
 Если же не хотите устанавливать - можете прописать команды сами:
 
 ```bash
-mvn clean package #устанавливает зависимости
-mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/libs #сохраняет зависимости 
 docker-compose up -d #поднимает бд, настраивает окружение для приложения
 docker attach app # подключается к stdin сервиса
 ```
