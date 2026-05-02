@@ -32,19 +32,28 @@ public class App
     static Scanner in;
     static Importer importer;
 
-    public static void main( String[] args ) {
-        String url = "jdbc:postgresql://db:5432/app_db";
-        String user = "user";
-        String password = "pass";
-        in = new Scanner(System.in);
-        Connection conn;
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    public static void main( String[] args ) throws InterruptedException, SQLException {
+
+        String url = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASS");
+
+        int maxRetries = 5;
+        int delayMs = 1000;
+        Connection conn = null;
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                conn = DriverManager.getConnection(url, user, password);
+                break;  // Успех
+            } catch (SQLException e) {
+                if (i == maxRetries - 1) throw e;
+                Thread.sleep(delayMs * (i + 1));  // Backoff
+            }
         }
+
          r = new Reader(conn);
          w = new Writer(conn);
+        in = new Scanner(System.in);
         importer = new Importer();
         while(true){
             Vector<Faculty> faculties = r.getFacultyList();
@@ -434,16 +443,16 @@ public class App
 
                     try (Stream<Path> stream = Files.list(importer.getPath())) {
                         System.out.println("Folders in current folder:");
-                        List<Path> Directories = stream
-                                .filter(p -> Files.isDirectory(p))
+                        List<Path> directories = stream
+                                .filter(Files::isDirectory)
                                 .toList();
 
-                        if (Directories.isEmpty()) {
+                        if (directories.isEmpty()) {
                             System.out.println("No subfolders in current folder.");
                         } else {
-                            AtomicInteger i = new AtomicInteger(1);
-                            Directories.forEach(name -> {
-                                int idx = i.getAndIncrement();
+                            AtomicInteger i = new AtomicInteger(0);
+                            directories.forEach(name -> {
+                                int idx = i.incrementAndGet();
 
                                 System.out.print(name.getFileName().toString() + (idx % 5 != 0 ? '\t' : '\n'));
                             });
@@ -473,19 +482,25 @@ public class App
                 case "\\select" -> {
 
                     try (Stream<Path> stream = Files.list(importer.getPath())) {
-                        AtomicInteger i = new AtomicInteger(1);
 
-                        stream
-                                .map(p -> p.getFileName().toString())
-                                .forEach(name -> {
-                                    int idx = i.getAndIncrement();
-                                    System.out.print(name + (idx % 5 != 0 ? '\t' : '\n'));
-                                });
+                        List<Path> files = stream
+                                .filter(Files::isRegularFile)
+                                .toList();
+
+                        if(files.isEmpty()){
+                            System.out.println("No files in current folder.");
+                        } else {
+                            AtomicInteger i = new AtomicInteger(0);
+                            files.forEach(name -> {
+                                int idx = i.incrementAndGet();
+
+                                System.out.print(name.getFileName().toString() + (idx % 5 != 0 ? '\t' : '\n'));
+                            });
+                        }
 
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
                     }
-
 
                     System.out.println("\nEnter file name:\t");
                     String fileName = in.nextLine().trim();
