@@ -17,7 +17,7 @@ import java.util.Vector;
 public class Importer {
     public Importer(){};
 
-    private Path path = Paths.get(System.getProperty("user.dir"), "src", "Files");
+    private Path path = Paths.get(System.getProperty("user.dir"));
     private Character separator =',';
 
     public Path getPath() {
