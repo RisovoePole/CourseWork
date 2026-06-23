@@ -1,0 +1,12 @@
+build:
+    pandoc \
+    ./report/theory/1.1.md \
+    ./report/theory/1.2.md \
+    ./report/algorithms/2.1.md \
+    ./report/algorithms/2.2.md \
+    ./report/algorithms/2.3.md \
+    ./report/algorithms/2.4.md \
+    ./report/algorithms/2.5_diff.md \
+    -o report.docx --reference-doc=./template.docx --toc
+    libreoffice --norestore --view report.docx
+    #python merge_docx.py title.docx report.docx result.docx
