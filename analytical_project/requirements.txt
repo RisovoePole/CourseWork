@@ -1,0 +1,3 @@
+sqlalchemy
+psycopg[binary]
+python-dotenv

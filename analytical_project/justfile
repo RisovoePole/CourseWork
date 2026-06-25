@@ -1,0 +1,65 @@
+set shell := ["bash", "-cu"]
+
+container := "python_app"
+
+default:
+    @just --list --list-submodules
+
+# Initialize project
+init:
+    cp -n .env.example .env
+    @echo "Project initialized"
+
+build:
+    docker-compose up app --build
+
+db-up:
+    docker-compose down -v db
+    docker-compose up -d db
+
+db-down:
+    docker-compose down -v db
+
+
+logs:
+    docker compose logs -f
+
+shell:
+    docker compose exec app bash
+
+db-shell:
+    docker compose exec db psql \
+        -U $$POSTGRES_USER \
+        -d $$POSTGRES_DB
+
+migration name:
+    docker compose exec app \
+        alembic revision --autogenerate -m "{{name}}"
+
+migrate:
+    docker compose exec app \
+        alembic upgrade head
+
+downgrade:
+    docker compose exec app \
+        alembic downgrade -1
+
+history:
+    docker compose exec app \
+        alembic history
+
+current:
+    docker compose exec app \
+        alembic current
+
+heads:
+    docker compose exec app \
+        alembic heads
+
+stamp:
+    docker compose exec app \
+        alembic stamp head
+
+reset-db:
+    docker compose down -v
+    docker compose up -d
