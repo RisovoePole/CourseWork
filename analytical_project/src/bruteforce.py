@@ -301,6 +301,9 @@ def _explore_branch(top_idx: int):
     exact_size = _worker_state["exact_size"]
     materialize = _worker_state["materialize"]
 
+    if engine is not None and hasattr(engine, "calls"):
+        engine.calls = 0 
+    
     schedule = Schedule(max_pairs=max_pairs)
     results: List[List[List[int]]] = []
     counter = [0] 

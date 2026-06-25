@@ -11,7 +11,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
-    # command: pypy3 src/main.py
+    command: pypy3 src/main.py
 
   db:
     image: postgres:16
