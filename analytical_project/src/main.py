@@ -1,69 +1,80 @@
-from src.bruteforce import enumerate_schedules_backtracking, enumerate_schedules_parallel, schedules_count_for_size, total_vectors_count
-from src.config import ALGORITHM_MAX_PAIRS_PER_DAY, ALGORITHM_RUN_MAX_PAIRS, ALGORITHM_DISCIPLINE_COUNT
-from src.rules import (
-    ConstraintEngine,
-    MaxPairsPerDayRule,
-    NoAudienceTimeConflictRule,
-    NoDisciplineTimeConflictRule,
-    NoDuplicateVectorRule,
-)
-from src.timer import timer
+from .ScheduleContext import ScheduleContext
+from orm.base import get_session
 
+def dump_schedule_context(ctx: ScheduleContext):
 
-def _build_engine() -> ConstraintEngine:
-    return ConstraintEngine([
-        NoDuplicateVectorRule(),
-        NoAudienceTimeConflictRule(),
-        NoDisciplineTimeConflictRule(),
-        MaxPairsPerDayRule(max_pairs_per_day=ALGORITHM_MAX_PAIRS_PER_DAY),
-    ])
+    print("\n================ CONTEXT DUMP ================\n")
 
+    # -------------------
+    # CONFIG
+    # -------------------
+    print("CONFIG:")
+    print(vars(ctx.CONFIG))
+    print()
 
-@timer
-def run_backtracking() -> tuple[int, int]:
-    engine = _build_engine()
-    result_count = sum(
-        1
-        for _ in enumerate_schedules_backtracking(
-            max_pairs=ALGORITHM_RUN_MAX_PAIRS,
-            exact_size=True,
-            engine=engine,
-            materialize=False,
-        )
-    )
-    return result_count, engine.calls
+    # -------------------
+    # ENTITIES
+    # -------------------
+    print("AUDIENCES:")
+    for a in ctx.audiences:
+        print(a)
 
+    print("\nGROUPS:")
+    for g in ctx.groups:
+        print(g)
 
-@timer
-def run_parallel() -> tuple[int, int]:
-    engine = _build_engine()
-    _, result_count, calls = enumerate_schedules_parallel(
-        max_pairs=ALGORITHM_RUN_MAX_PAIRS,
-        exact_size=True,
-        engine=engine,
-        materialize=False,
-    )
-    return result_count, calls
+    print("\nPROFESSORS:")
+    for p in ctx.professors:
+        print(p)
 
-def compare_three_runs() -> None:
-    backtracking_count, backtracking_calls = run_backtracking()
-    parallel_count, parallel_calls = run_parallel()
+    print("\nDISCIPLINES:")
+    for d in ctx.disciplines:
+        print(d)
 
-    print(
-        f"Размер пространства одной пары (|V|): {total_vectors_count()}\n"
-        f"Сколько расписаний ровно из k пар существует: C(|V|, k): {schedules_count_for_size(ALGORITHM_DISCIPLINE_COUNT)}" 
-    )
+    print("\nROOM TYPES:")
+    for r in ctx.roomtypes:
+        print(r)
 
-    print(
-        f"k={ALGORITHM_RUN_MAX_PAIRS} | "
-        f"backtracking: {backtracking_count} results, {backtracking_calls} checks | "
-        f"parallel: {parallel_count} results, {parallel_calls} checks"
-    )
+    # -------------------
+    # INDEXES
+    # -------------------
+    print("\nAUDIENCE BY ID:")
+    print(ctx.audience_by_id)
 
+    print("\nDISCIPLINE BY ID:")
+    print(ctx.discipline_by_id)
 
+    print("\nPROFESSOR BY ID:")
+    print(ctx.professor_by_id)
+
+    print("\nROOMTYPE BY ID:")
+    print(ctx.roomtype_by_id)
+
+    # -------------------
+    # RELATIONS
+    # -------------------
+    print("\nPROFESSOR -> DISCIPLINES:")
+    for k, v in ctx.professor_discipline.items():
+        print(k, "->", v)
+
+    print("\nDISCIPLINE -> PROFESSORS:")
+    for k, v in ctx.discipline_professors.items():
+        print(k, "->", v)
+
+    print("\nAUDIENCE -> ROOMTYPES:")
+    for k, v in ctx.audience_roomtypes.items():
+        print(k, "->", v)
+
+    print("\nROOMTYPE -> AUDIENCES:")
+    for k, v in ctx.roomtype_audiences.items():
+        print(k, "->", v)
+
+    print("\n============== END DUMP ==============\n")
 
 def main() -> None:
-    compare_three_runs()
+    with get_session() as session:
+        ctx = ScheduleContext.load_from_db(session)
+    dump_schedule_context(ctx)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,8 @@ build:
 
 db-up:
     docker-compose down -v db
-    docker-compose up -d db
+    docker-compose up -d db --wait
+    docker compose logs db
 
 db-down:
     docker-compose down -v db

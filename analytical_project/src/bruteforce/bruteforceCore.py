@@ -45,7 +45,7 @@ from src.models import (
     Vec,
     Schedule,
 )
-from src.rules import ConstraintEngine
+from src.bruteforce.rules import ConstraintEngine
 
 
 def all_vectors() -> Iterator[Vec]:

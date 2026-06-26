@@ -1,6 +1,5 @@
 """
 models.py
-Базовые структуры данных для алгоритма полного перебора расписаний.
 
 Диапазоны идентификаторов (берутся как range(N), т.е. 0..N-1):
     discipline_id : 0..5   -> 6 значений
@@ -13,18 +12,15 @@ from dataclasses import dataclass
 from typing import List, Iterator, Optional
 
 from src.config import (
-    ALGORITHM_AUDIENCE_COUNT,
-    ALGORITHM_DISCIPLINE_COUNT,
     ALGORITHM_MAX_PAIRS_PER_WEEK,
     ALGORITHM_TIMESLOT_COUNT,
     ALGORITHM_WEEKDAY_COUNT,
 )
 
 # --- Диапазоны (количество значений, реальные id = range(COUNT)) ---
-DISCIPLINE_COUNT = ALGORITHM_DISCIPLINE_COUNT
 WEEKDAY_COUNT = ALGORITHM_WEEKDAY_COUNT
 TIMESLOT_COUNT = ALGORITHM_TIMESLOT_COUNT
-AUDIENCE_COUNT = ALGORITHM_AUDIENCE_COUNT
+
 
 MAX_PAIRS_PER_WEEK = ALGORITHM_MAX_PAIRS_PER_WEEK
 
@@ -39,12 +35,13 @@ class Vec:
     weekday_id: int
     timeslot_id: int
     audience_id: int
+    teacher_id: int
 
     def as_list(self) -> List[int]:
-        return [self.discipline_id, self.weekday_id, self.timeslot_id, self.audience_id]
+        return [self.discipline_id, self.weekday_id, self.timeslot_id, self.audience_id, self.teacher_id]
 
     def __repr__(self) -> str:
-        return f"({self.discipline_id},{self.weekday_id},{self.timeslot_id},{self.audience_id})"
+        return f"({self.discipline_id},{self.weekday_id},{self.timeslot_id},{self.audience_id},{self.teacher_id})"
 
 
 class Schedule:

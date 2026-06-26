@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, BigInteger, Double, TIMESTAMP, func
 from sqlalchemy.dialects.postgresql import JSONB
-from .base import Base
+from orm.base import Base
 
 
-class AlgorithmRun(Base):
+class AlgorithmRunORM(Base):
     __tablename__ = "algorithm_runs"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

@@ -1,3 +1,7 @@
 sqlalchemy
 psycopg[binary]
 python-dotenv
+deap
+scipy[binary]
+numpy
+ortools

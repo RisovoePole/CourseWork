@@ -1,4 +1,4 @@
-FROM pypy:3.11
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # код проекта
 COPY . .
 
-CMD ["pypy", "-u", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"]
+CMD ["python", "-u", "-m", "unittest", "discover", "-s", "tests", "-p", "test*.py"]
