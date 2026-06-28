@@ -136,11 +136,3 @@ def print_sweep_summary(results: Dict[str, List[SweepRunResult]]) -> None:
             print(f"{algorithm:<8} {label:<40} {len(group_runs):>4} {success:>8.1f}% "
                   f"{soft_mean:>10.3f} {time_mean:>10.1f}")
         print()
-
-
-if __name__ == "__main__":
-    results = run_full_sweep("medium")
-    print_sweep_summary(results)
-
-    flat = {f"{algo}": runs for algo, runs in results.items()}
-    export_runs_csv(flat, "results/hyperparameter_sweep.csv")

@@ -10,7 +10,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
-    command: python -m src.hyperparameter_sweep
+    command: python -m src.main
 
   db:
     image: postgres:16
