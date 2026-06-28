@@ -13,13 +13,16 @@ init:
 build:
     docker-compose up app --build
 
+
+db-down:
+    docker compose stop db
+    docker compose rm -f db
+
 db-up:
-    docker-compose down -v db
+    just db-down
     docker-compose up -d db --wait
     docker compose logs db
 
-db-down:
-    docker-compose down -v db
 
 
 logs:

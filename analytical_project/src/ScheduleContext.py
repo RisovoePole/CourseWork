@@ -3,6 +3,7 @@ from typing import Dict, List, Set, Tuple
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 import os
+from typing import Optional
 from dotenv import load_dotenv
 from orm.audience import AudienceORM
 from orm.roomtype import RoomTypeORM
@@ -64,26 +65,25 @@ class RoomType:
     id: int
     name: str
 
+
+@dataclass
+class Config:
+    PROFESSORS_COUNT: int = 0
+    AUDIENCES_COUNT: int = 0
+    ROOM_TYPES_COUNT: int = 0
+    DISCIPLINES_COUNT: int = 0
+
+    WEEKDAY_COUNT: int = 0
+    MAX_PAIRS_PER_WEEK: int = 0
+    MAX_PAIRS_PER_DAY: int = 0
+
 class ScheduleContext:
-
-    # -------------------------
-    # GLOBAL CONFIG (UPPER CASE)
-    # -------------------------
-    class CONFIG:
-        PROFESSORS_COUNT: int = 0
-        AUDIENCES_COUNT: int = 0
-        ROOM_TYPES_COUNT: int = 0
-        DISCIPLINES_COUNT: int = 0
-
-        WEEKDAY_COUNT: int = 0
-        MAX_PAIRS_PER_WEEK: int = 0
-        MAX_PAIRS_PER_DAY: int = 0
-
     # -------------------------
     # INIT
     # -------------------------
     def __init__(
         self,
+        config: Optional[Config],
         audiences: List[Audience],
         groups: List[Group],
         professors: List[Professor],
@@ -94,12 +94,12 @@ class ScheduleContext:
         audience_roomtypes: Dict[int, Set[int]],
         roomtype_audiences: Dict[int, Set[int]]
     ):
-
         self.audiences = audiences
         self.groups = groups
         self.professors = professors
         self.disciplines = disciplines
         self.roomtypes = roomtypes
+        self.config = config or self._init_config()
 
         # relations
         self.professor_discipline = professor_discipline
@@ -116,25 +116,29 @@ class ScheduleContext:
         self.discipline_by_id = {d.id: d for d in disciplines}
         self.roomtype_by_id = {r.id: r for r in roomtypes}
 
-        self._init_config()
+        
         # -------------------------
         # CONFIG INIT
         # -------------------------
-    def _init_config(self):
-        self.CONFIG.PROFESSORS_COUNT = len(self.professors)
-        self.CONFIG.AUDIENCES_COUNT = len(self.audiences)
-        self.CONFIG.DISCIPLINES_COUNT = len(self.disciplines)
-        self.CONFIG.ROOM_TYPES_COUNT = len(self.roomtypes)
+    def _init_config(self) -> Config:
+        config = Config()
 
-        self.CONFIG.WEEKDAY_COUNT = get_env_int("ALGORITHM_WEEKDAY_COUNT", 0)
-        self.CONFIG.MAX_PAIRS_PER_DAY = get_env_int("ALGORITHM_MAX_PAIRS_PER_DAY", 0)
-        self.CONFIG.MAX_PAIRS_PER_WEEK = get_env_int("ALGORITHM_MAX_PAIRS_PER_WEEK", 0)
+        config.PROFESSORS_COUNT = len(self.professors)
+        config.AUDIENCES_COUNT = len(self.audiences)
+        config.DISCIPLINES_COUNT = len(self.disciplines)
+        config.ROOM_TYPES_COUNT = len(self.roomtypes)
+        
+        config.WEEKDAY_COUNT = get_env_int("ALGORITHM_WEEKDAY_COUNT", 0)
+        config.MAX_PAIRS_PER_DAY = get_env_int("ALGORITHM_MAX_PAIRS_PER_DAY", 0)
+        config.MAX_PAIRS_PER_WEEK = get_env_int("ALGORITHM_MAX_PAIRS_PER_WEEK", 0)
+
+        return config
 
     # -----------------------------
     # LOAD FROM DB (MAIN METHOD)
     # -----------------------------
     @classmethod
-    def load_from_db(cls, session: Session) -> "ScheduleContext":
+    def load_from_db(cls, session: Session, config: Optional[Config] = None) -> "ScheduleContext":
 
         audiences_raw = session.execute(select(AudienceORM)).scalars().all()
         groups_raw = session.execute(select(StudentsGroupORM)).scalars().all()
@@ -206,6 +210,7 @@ class ScheduleContext:
         # BUILD CONTEXT
         # -------------------------
         return cls(
+            config=config,
             audiences=audiences,
             groups=groups,
             professors=professors,

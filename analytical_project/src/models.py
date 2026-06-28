@@ -1,47 +1,20 @@
-"""
-models.py
-
-Диапазоны идентификаторов (берутся как range(N), т.е. 0..N-1):
-    discipline_id : 0..5   -> 6 значений
-    weekday_id    : 0..7   -> 8 значений
-    timeslot_id   : 0..6   -> 7 значений
-    audience_id   : 0..20  -> 21 значение
-"""
-
 from dataclasses import dataclass
 from typing import List, Iterator, Optional
-
-from src.config import (
-    ALGORITHM_MAX_PAIRS_PER_WEEK,
-    ALGORITHM_TIMESLOT_COUNT,
-    ALGORITHM_WEEKDAY_COUNT,
-)
-
-# --- Диапазоны (количество значений, реальные id = range(COUNT)) ---
-WEEKDAY_COUNT = ALGORITHM_WEEKDAY_COUNT
-TIMESLOT_COUNT = ALGORITHM_TIMESLOT_COUNT
-
-
-MAX_PAIRS_PER_WEEK = ALGORITHM_MAX_PAIRS_PER_WEEK
-
+from orm.schedule import ScheduleORM
 
 @dataclass(frozen=True, order=True, slots=True)
 class Vec:
-    """
-    Один элемент расписания - "пара".
-    vec = [discipline_id, weekday_id, timeslot_id, audience_id]
-    """
     discipline_id: int
     weekday_id: int
     timeslot_id: int
     audience_id: int
-    teacher_id: int
+    professor_id: int
 
     def as_list(self) -> List[int]:
-        return [self.discipline_id, self.weekday_id, self.timeslot_id, self.audience_id, self.teacher_id]
+        return [self.discipline_id, self.weekday_id, self.timeslot_id, self.audience_id, self.professor_id]
 
     def __repr__(self) -> str:
-        return f"({self.discipline_id},{self.weekday_id},{self.timeslot_id},{self.audience_id},{self.teacher_id})"
+        return f"({self.discipline_id},{self.weekday_id},{self.timeslot_id},{self.audience_id},{self.professor_id})"
 
 
 class Schedule:
@@ -50,7 +23,7 @@ class Schedule:
     Ограничение: не более MAX_PAIRS_PER_WEEK элементов.
     """
 
-    def __init__(self, max_pairs: int = MAX_PAIRS_PER_WEEK) -> None:
+    def __init__(self, max_pairs: int) -> None:
         self._items: List[Vec] = []
         self._max_pairs = max_pairs
 
@@ -88,6 +61,23 @@ class Schedule:
         clone = Schedule(max_pairs=self._max_pairs)
         clone._items = list(self._items)
         return clone
+
+    def save_to_db(self, session) -> None:
+        session.add_all([
+        ScheduleORM(
+            day_of_week=v.weekday_id,
+            pair_number=v.timeslot_id,
+            audience_id=v.audience_id,
+            discipline_id=v.discipline_id,
+            professor_id=v.professor_id,
+        )
+            for v in self._items
+        ])
+        session.commit()
+
+    def replace(self, idx: int, vec: Vec) -> None:
+        """Точечная замена элемента — нужна для локальных модификаций (Tabu Search и т.п.)."""
+        self._items[idx] = vec
 
     def __repr__(self) -> str:
         return f"Schedule({[repr(v) for v in self._items]})"

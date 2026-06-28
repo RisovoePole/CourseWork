@@ -41,3 +41,4 @@ build/
 __pycache__
 
 .env
+.github
