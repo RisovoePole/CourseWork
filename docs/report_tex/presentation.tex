@@ -1,0 +1,589 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage{fontspec}
+\usepackage{microtype}
+\usepackage{polyglossia}
+\setmainlanguage{russian}
+\setmainfont{Liberation Sans}[Ligatures=TeX]
+\setsansfont{Liberation Sans}
+\setmonofont{Liberation Mono}
+\newfontfamily\cyrillicfont{Liberation Sans}
+\newfontfamily\cyrillicfontsf{Liberation Sans}
+\newfontfamily\cyrillicfonttt{Liberation Mono}
+
+\usepackage{graphicx}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\definecolor{Bg}{HTML}{2D353B}
+\definecolor{Panel}{HTML}{343F44}
+\definecolor{PanelAlt}{HTML}{3D484D}
+\definecolor{Text}{HTML}{D3C6AA}
+\definecolor{Muted}{HTML}{859289}
+\definecolor{Green}{HTML}{A7C080}
+\definecolor{Blue}{HTML}{7FBBB3}
+\definecolor{Yellow}{HTML}{DBBC7F}
+\definecolor{Red}{HTML}{E67E80}
+\definecolor{Purple}{HTML}{D699B6}
+
+\setbeamercolor{normal text}{fg=Text,bg=Bg}
+\setbeamercolor{title}{fg=Green,bg=Bg}
+\setbeamercolor{frametitle}{fg=Text,bg=Bg}
+\setbeamercolor{structure}{fg=Blue}
+\setbeamercolor{footline}{fg=Muted,bg=Bg}
+\setbeamerfont{title}{size=\fontsize{30}{34}\selectfont,series=\bfseries}
+\setbeamerfont{subtitle}{size=\fontsize{12}{16}\selectfont}
+\setbeamerfont{frametitle}{size=\fontsize{18}{22}\selectfont,series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\textcolor{Yellow}{\scriptsize$\blacksquare$}}
+\setbeamertemplate{itemize subitem}{\textcolor{Blue}{\scriptsize$\bullet$}}
+\setbeamertemplate{frametitle}{}
+\setbeamertemplate{footline}{
+  \hbox{
+    \begin{beamercolorbox}[wd=.49\paperwidth,ht=2.5ex,dp=1.2ex,leftskip=0.35cm]{footline}
+      FrogOS / reconciliation runtime
+    \end{beamercolorbox}
+    \begin{beamercolorbox}[wd=.49\paperwidth,ht=2.5ex,dp=1.2ex,rightskip=0.35cm plus1fil]{footline}
+      \hfill \insertframenumber/\inserttotalframenumber
+    \end{beamercolorbox}
+  }
+}
+
+\setminted{
+  bgcolor=Panel,
+  breaklines=true,
+  fontsize=\footnotesize,
+  frame=none,
+  linenos=false,
+  tabsize=2
+}
+\usemintedstyle{gruvbox-dark}
+
+\newcommand{\kicker}[1]{\textcolor{Muted}{\footnotesize\MakeUppercase{#1}}}
+\newcommand{\slidehead}[2]{
+  \vspace*{0.2cm}
+  \kicker{#1}\par
+  \vspace{0.1cm}
+  {\usebeamerfont{frametitle}\textcolor{Text}{#2}}\par
+  \vspace{0.18cm}
+  {\color{Muted}\rule{\linewidth}{0.4pt}}
+  \vspace{0.25cm}
+}
+\newcommand{\bigclaim}[1]{{\fontsize{22}{27}\selectfont\bfseries #1}}
+\newcommand{\leadclaim}[1]{{\fontsize{18}{23}\selectfont\bfseries #1}}
+\newcommand{\muted}[1]{\textcolor{Muted}{#1}}
+\newcommand{\green}[1]{\textcolor{Green}{#1}}
+\newcommand{\blue}[1]{\textcolor{Blue}{#1}}
+\newcommand{\yellow}[1]{\textcolor{Yellow}{#1}}
+\newcommand{\red}[1]{\textcolor{Red}{#1}}
+\newcommand{\panel}[2]{
+  \begin{beamercolorbox}[wd=#1,sep=0.25cm,rounded=false]{normal text}
+    \colorbox{Panel}{\begin{minipage}{\dimexpr#1-0.5cm\relax}#2\end{minipage}}
+  \end{beamercolorbox}
+}
+\newcommand{\pill}[2]{%
+  \tikz[baseline=(x.base)] \node[inner xsep=6pt,inner ysep=2.5pt,fill=#1,text=Bg,font=\bfseries\scriptsize] (x) {#2};%
+}
+
+\tikzset{
+  flow/.style={
+    rectangle,
+    rounded corners=2pt,
+    minimum width=2.0cm,
+    minimum height=0.9cm,
+    align=center,
+    draw=#1,
+    fill=Panel,
+    text=Text,
+    line width=0.8pt,
+    font=\small\bfseries
+  },
+  wire/.style={-{Latex[length=2.2mm]}, line width=0.7pt, draw=Muted}
+}
+
+\title{FrogOS}
+\subtitle{declarative intent -> observed state -> ordered plan -> commit}
+\author{Кроитор Александр}
+\institute{Научный руководитель: Nichita Nartea}
+\date{2026}
+
+\begin{document}
+
+\begin{frame}
+  \vspace*{0.7cm}
+  \kicker{курсовая работа / autonomous linux OS}
+  \vspace{0.35cm}
+
+  {\usebeamerfont{title}\textcolor{Green}{FrogOS}}\par
+  \vspace{0.18cm}
+  {\usebeamerfont{subtitle}\textcolor{Blue}{declarative intent -> observed state -> ordered plan -> commit}}\par
+
+  \vfill
+  \begin{tikzpicture}
+    \node[flow=Green] (i) {Intent};
+    \node[flow=Blue, right=0.7cm of i] (s) {Observed\\state};
+    \node[flow=Yellow, right=0.7cm of s] (p) {Plan};
+    \node[flow=Purple, right=0.7cm of p] (c) {Commit};
+    \draw[wire] (i) -- (s);
+    \draw[wire] (s) -- (p);
+    \draw[wire] (p) -- (c);
+  \end{tikzpicture}
+
+  \vfill
+  \muted{Кроитор Александр / научный руководитель: Nichita Nartea / 2026}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{01 / problem}{Linux state drifts}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.50\textwidth}
+      \leadclaim{Админ описал \green{desired state}.}
+      \vspace{0.45cm}
+
+      \begin{itemize}
+        \item package доступен;
+        \item service включён;
+        \item user состоит в группах;
+        \item профиль реагирует на процесс.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \leadclaim{Хост ушёл в \red{state drift}.}
+      \vspace{0.45cm}
+
+      \begin{itemize}
+        \item пакет удалили;
+        \item service упал;
+        \item группа пропала;
+        \item power profile сменился.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vfill
+  {\large\yellow{Задача FrogOS: не выполнить скрипт, а вернуть систему к intent.}}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{02 / requirements}{Функциональные требования}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{Intent path}
+      \begin{itemize}
+        \item принять декларативную конфигурацию;
+        \item проверить типы, семантику и бизнес логику;
+        \item сохранить IR как \texttt{intent.json};
+        \item явно версионировать контракт.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{Runtime path}
+      \begin{itemize}
+        \item собрать \texttt{SystemState};
+        \item построить delta между графами;
+        \item применить ordered plan;
+        \item отправить commit или rollback.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vfill
+  \muted{Функционально FrogOS должна закрывать полный путь: describe -> observe -> plan -> execute -> store.}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{03 / constraints}{Нефункциональные требования}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.31\textwidth}
+      \pill{Green}{Safety}\\[0.18cm]
+      undo для каждого шага, dry-run путь, daemon boundary
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Yellow}{Determinism}\\[0.18cm]
+      одинаковые входы дают одинаковый план
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Blue}{Audit}\\[0.18cm]
+      поколение хранит проверенный intent и результат применения
+    \end{column}
+  \end{columns}
+
+  \vspace{0.55cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{Maintainability}
+      \begin{itemize}
+        \item новые домены проходят DSL -> IR -> Toad -> Planner -> Executor;
+        \item side effects локализованы в backend traits.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{Portability}
+      \begin{itemize}
+        \item сборка через flakes;
+        \item e2e в FHS-контейнере;
+        \item Rust/Haskell boundary через protobuf.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{04 / model}{Reconciliation loop}
+
+  \vspace{0.6cm}
+
+  \begin{center}
+    {\fontsize{24}{30}\selectfont
+      \( I \times S^{obs}_t \rightarrow P_t \rightarrow S^{obs}_{t+1} \)
+    }
+  \end{center}
+
+  \vspace{0.55cm}
+
+  \begin{columns}[T,totalwidth=0.88\textwidth]
+    \begin{column}{0.28\textwidth}
+      \pill{Green}{I}\\[0.18cm]
+      проверенный intent
+    \end{column}
+
+    \begin{column}{0.28\textwidth}
+      \pill{Blue}{Sobs}\\[0.18cm]
+      то, что увидел Toad
+    \end{column}
+
+    \begin{column}{0.28\textwidth}
+      \pill{Yellow}{P}\\[0.18cm]
+      ordered plan + undo
+    \end{column}
+  \end{columns}
+
+  \vfill
+
+  \muted{FrogOS не знает абсолютную истину о машине. Каждый цикл начинается с нового наблюдения.}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{05 / architecture}{Компоненты не смешивают ответственность}
+
+  \centering
+  \begin{tikzpicture}[node distance=0.55cm]
+    \node[flow=Green] (dsl) {DSL\\Haskell};
+    \node[flow=Green, right=of dsl] (ir) {IR v9\\JSON};
+    \node[flow=Blue, right=of ir] (toad) {Toad\\Rust probes};
+    \node[flow=Yellow, right=of toad] (planner) {Planner\\Haskell};
+    \node[flow=Purple, right=of planner] (exec) {Executor\\Rust};
+
+    \draw[wire] (dsl) -- (ir);
+    \draw[wire] (ir) -- (toad);
+    \draw[wire] (toad) -- (planner);
+    \draw[wire] (planner) -- (exec);
+  \end{tikzpicture}
+
+  \vspace{0.55cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.47\textwidth}
+      \green{Чистые слои}
+      \begin{itemize}
+        \item DSL validation;
+        \item IR schema version;
+        \item graph delta;
+        \item JSON/protobuf contracts.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \yellow{Side effects}
+      \begin{itemize}
+        \item Nix package store;
+        \item dinit modules;
+        \item users/groups;
+        \item network rules.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{}
+  \slidehead{06 / DSL}{Intent читается как сценарий, но не является скриптом}
+
+  \begin{minted}{haskell}
+gaming :: ConfigBuilder ()
+gaming = profile "gaming" $
+    when (processRunning "steam" `via` poll 500) $ do
+        disable nginx
+        setPowerProfile Performance
+  \end{minted}
+
+  \vspace{0.25cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.31\textwidth}
+      \pill{Blue}{Condition}\\[0.15cm]
+      когда профиль активен
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Yellow}{Action}\\[0.15cm]
+      какое состояние нужно
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Purple}{Policy}\\[0.15cm]
+      какие варианты допустимы
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{}
+  \slidehead{07 / comparison}{NixOS фиксирует систему, FrogOS реагирует на состояние}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{NixOS}
+      \begin{minted}[fontsize=\tiny]{nix}
+{ pkgs, ... }: {
+  services.nginx.enable = true;
+  users.users.alice = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "docker" ];
+  };
+  environment.systemPackages = [
+    pkgs.dust
+  ];
+}
+      \end{minted}
+      {\scriptsize\muted{Фичи: reproducible rebuild, generations, Nix store.}}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{FrogOS}
+      \begin{minted}[fontsize=\tiny]{haskell}
+profile "desktop" $ do
+  enable nginx
+  user "alice" $ do
+    normalUser True
+    extraGroups ["wheel", "docker"]
+    exposePackage "dust"
+
+profile "gaming" $
+  when (processRunning "steam" `via` poll 500) $
+    disable nginx
+      \end{minted}
+      {\scriptsize\muted{Фичи: runtime observation, reactive profiles, delta plan.}}
+    \end{column}
+  \end{columns}
+
+  \vfill
+  \muted{FrogOS не заменяет Nix. Он использует Nix как backend там, где нужны пакеты и store.}
+\end{frame}
+
+\begin{frame}[fragile]{}
+  \slidehead{08 / IR}{JSON-контракт переживает runtime boundaries}
+
+  \begin{minted}{json}
+{
+  "version": 9,
+  "condition": {
+    "type": "process_running",
+    "name": "steam",
+    "observe": { "type": "poll", "interval_ms": 500 }
+  },
+  "actions": [
+    { "type": "module_disable", "priority": 100 },
+    { "type": "power_profile", "value": "performance", "priority": 100 }
+  ]
+}
+  \end{minted}
+
+  \vspace{0.15cm}
+  \muted{Версия схемы даёт Planner право явно отвергнуть несовместимый intent.}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{09 / planner}{Planner считает delta, а не команды из профиля}
+
+  \centering
+  \begin{tikzpicture}[node distance=0.48cm]
+    \node[flow=Green, minimum width=2.5cm] (active) {active\\profiles};
+    \node[flow=Blue, right=of active, minimum width=2.5cm] (desired) {desired\\graph};
+    \node[flow=Blue, below=0.55cm of desired, minimum width=2.5cm] (current) {current\\graph};
+    \node[flow=Yellow, right=0.75cm of desired, minimum width=2.5cm] (delta) {delta};
+    \node[flow=Purple, right=of delta, minimum width=2.5cm] (steps) {ordered\\PlanStep};
+
+    \draw[wire] (active) -- (desired);
+    \draw[wire] (current) -- (delta);
+    \draw[wire] (desired) -- (delta);
+    \draw[wire] (delta) -- (steps);
+  \end{tikzpicture}
+
+  \vspace{0.45cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{Invariant}
+      \begin{itemize}
+        \item equal inputs -> equal plan;
+        \item reconciled resource -> no step;
+        \item conflict -> planning error.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{Ordering}
+      \begin{itemize}
+        \item groups before users;
+        \item users before memberships;
+        \item packages before modules.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{10 / planning logic}{Почему нужен граф ресурсов}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{Desired graph}
+      \begin{itemize}
+        \item строится из IR и активных профилей;
+        \item priority разрешает конкурирующие желания;
+        \item effect resources не становятся состоянием сами по себе.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{Current graph}
+      \begin{itemize}
+        \item строится из \texttt{SystemState};
+        \item содержит только наблюдаемые факты;
+        \item delta удаляет уже согласованные ресурсы.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  \vfill
+  \begin{center}
+    \pill{Blue}{Plan = minimal difference + backend-safe ordering + undo metadata}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{}
+  \slidehead{11 / executor}{PlanStep несёт действие и обратный шаг}
+
+  \begin{minted}{rust}
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum DeltaAction {
+    GroupAdd { name: String },
+    UserAdd { config: UserConfig },
+    MembershipAdd { user: String, group: String },
+    PackageInstall { name: String },
+    ModuleEnable { module: ModuleRef, priority: u32 },
+    NetworkApply { allow_ports: Vec<u16> },
+}
+  \end{minted}
+
+  \vspace{0.2cm}
+  \begin{center}
+    \yellow{DeltaAction = данные. Side effect = только dispatch в Executor.}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{}
+  \slidehead{12 / demo signal}{Реальный ordered plan заканчивается commit}
+
+  \begin{minted}{text}
+[1/11]  add group docker
+[2/11]  add group networkmanager
+[3/11]  add group nobody
+[4/11]  add group nogroup
+[5/11]  add group wheel
+[6/11]  add user yorunikakeru
+[7/11]  add yorunikakeru -> group docker
+[8/11]  add yorunikakeru -> group networkmanager
+[9/11]  add yorunikakeru -> group wheel
+[10/11] install package dust
+frogosd::supervisor_runtime: store commit
+  \end{minted}
+
+  \vspace{0.08cm}
+  \muted{Лог показывает не “успешную команду”, а ordered reconciliation plan.}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{13 / runtime}{Supervisor держит actor pipeline живым}
+
+  \centering
+  \begin{tikzpicture}[node distance=0.56cm]
+    \node[flow=Blue, minimum width=2.35cm] (toad) {ToadActor};
+    \node[flow=Green, right=of toad, minimum width=2.0cm] (bridge) {Bridge};
+    \node[flow=Yellow, right=of bridge, minimum width=2.45cm] (planner) {PlannerActor};
+    \node[flow=Purple, right=of planner, minimum width=2.45cm] (exec) {ExecutorActor};
+
+    \draw[wire] (toad) -- (bridge);
+    \draw[wire] (bridge) -- (planner);
+    \draw[wire] (planner) -- (exec);
+
+    \node[below=0.12cm of toad, text=Muted, font=\tiny] {publishes state};
+    \node[below=0.12cm of bridge, text=Muted, font=\tiny] {encodes};
+    \node[below=0.12cm of planner, text=Muted, font=\tiny] {plans};
+    \node[below=0.12cm of exec, text=Muted, font=\tiny] {applies};
+
+    \node[above=0.14cm of bridge, text=Blue, font=\tiny\bfseries] {watch};
+    \node[above=0.14cm of planner, text=Blue, font=\tiny\bfseries] {mpsc + protobuf};
+    \node[above=0.14cm of exec, text=Blue, font=\tiny\bfseries] {Plan};
+  \end{tikzpicture}
+
+  \vspace{0.28cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.48\textwidth}
+      \green{rest-for-one}
+      \begin{itemize}
+        \item Toad -> вся downstream chain;
+        \item Bridge -> Planner + Executor;
+        \item Executor -> новая execution chain.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \yellow{Почему так}
+      \begin{itemize}
+        \item paired ends у каналов;
+        \item state source должен быть цельным;
+        \item restart rate limited.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{}
+  \slidehead{14 / result}{Что защищает архитектура}
+
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.31\textwidth}
+      \pill{Green}{Correctness}\\[0.2cm]
+      типы DSL, IR v9, golden/round-trip tests
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Yellow}{Recovery}\\[0.2cm]
+      undo в каждом PlanStep, rollback в обратном порядке
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \pill{Blue}{Isolation}\\[0.2cm]
+      FHS e2e, daemon socket, generation store
+    \end{column}
+  \end{columns}
+
+  \vspace{0.7cm}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.55\textwidth}
+      \leadclaim{\green{Итог:} self-healing как reconciliation loop.}
+    \end{column}
+    \begin{column}{0.39\textwidth}
+      \begin{itemize}
+        \item intent проверяется;
+        \item state наблюдается;
+        \item delta применяется с undo.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\end{document}

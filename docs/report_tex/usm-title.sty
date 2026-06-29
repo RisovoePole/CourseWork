@@ -1,0 +1,98 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{usm-title}[2025/07/06 USM thesis title page]
+
+\RequirePackage{geometry}
+\RequirePackage{array}
+\RequirePackage{ragged2e}
+\RequirePackage{xparse}
+
+\geometry{
+    left=20mm,
+    right=20mm,
+    top=20mm,
+    bottom=20mm
+}
+
+\newcommand{\USMUniversity}{
+ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ РЕСПУБЛИКИ\\
+МОЛДОВА
+}
+
+\newcommand{\USMFaculty}{
+ФАКУЛЬТЕТ МАТЕМАТИКИ И ИНФОРМАТИКИ
+}
+
+\newcommand{\USMDepartment}{
+ДЕПАРТАМЕНТ ИНФОРМАТИКИ
+}
+
+\newcommand{\USMCity}{
+КИШИНЁВ
+}
+
+\def\USMAuthor{}
+\def\USMTitle{}
+\def\USMSpeciality{}
+\def\USMSupervisor{}
+\def\USMDepartmentHead{}
+\def\USMGroup{}
+\def\USMYear{}
+
+\NewDocumentCommand{\authorname}{m}{\gdef\USMAuthor{#1}}
+\NewDocumentCommand{\thesistitle}{m}{\gdef\USMTitle{#1}}
+\NewDocumentCommand{\speciality}{m}{\gdef\USMSpeciality{#1}}
+\NewDocumentCommand{\supervisor}{m}{\gdef\USMSupervisor{#1}}
+\NewDocumentCommand{\departmenthead}{m}{\gdef\USMDepartmentHead{#1}}
+\NewDocumentCommand{\group}{m}{\gdef\USMGroup{#1}}
+\NewDocumentCommand{\yearofdefense}{m}{\gdef\USMYear{#1}}
+
+\newcommand{\maketitlepage}{
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+{\bfseries\USMUniversity}
+\vspace{0.8cm}
+
+{\bfseries\USMFaculty}
+\vspace{0.3cm}
+
+{\bfseries\USMDepartment}
+\vspace{3cm}
+
+{\bfseries\USMAuthor}
+\vspace{2cm}
+
+{\bfseries\USMTitle}
+\vspace{1.4cm}
+
+{\bfseries\USMSpeciality}
+\vspace{0.6cm}
+
+{\bfseries Курсовая работа}
+\end{center}
+
+\vfill
+\noindent
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{0.47\textwidth}
+>{\raggedright\arraybackslash}p{0.48\textwidth}
+}
+Директор Департамента:
+&
+\USMDepartmentHead
+\\[1.2cm]
+Научный руководитель:
+&
+\USMSupervisor
+\\[1.2cm]
+Автор:
+&
+\USMAuthor, \USMGroup
+\end{tabular}
+
+\vfill
+\begin{center}
+{\bfseries\USMCity{} -- \USMYear}
+\end{center}
+\end{titlepage}
+}

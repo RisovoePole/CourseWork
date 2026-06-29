@@ -1,0 +1,16 @@
+set shell := ["bash", "-cu"]
+
+report:
+    nix run .#report
+
+presentation:
+    nix run .#presentation
+
+generate-graphs:
+    nix run
+
+generate-bibliography:
+    test -f bibliography.bib || : > bibliography.bib
+
+clean-report:
+    nix develop --command latexmk -C report.tex

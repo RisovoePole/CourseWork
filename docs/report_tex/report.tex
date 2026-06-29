@@ -1,0 +1,155 @@
+\documentclass[a4paper,14pt]{extreport}
+
+\usepackage[left=20mm,right=20mm,top=20mm,bottom=20mm]{geometry}
+\usepackage{fontspec}
+\usepackage{microtype}
+\usepackage{polyglossia}
+\usepackage{tabularx}
+\setmainlanguage{russian}
+
+\setmainfont{Times Newer Roman}[Ligatures=TeX]
+\newfontfamily\cyrillicfont{Times Newer Roman}[Ligatures=TeX]
+\setsansfont{Liberation Sans}
+\setmonofont{Liberation Mono}
+\newfontfamily\cyrillicfontsf{Liberation Sans}
+\newfontfamily\cyrillicfonttt{Liberation Mono}
+
+\renewcommand\normalsize{\fontsize{14pt}{21pt}\selectfont}
+\renewcommand\small{\fontsize{12pt}{18pt}\selectfont}
+\renewcommand\large{\fontsize{16pt}{24pt}\selectfont}
+\renewcommand\Large{\fontsize{18pt}{27pt}\selectfont}
+\renewcommand\LARGE{\fontsize{20pt}{30pt}\selectfont}
+
+\usepackage{usm-title}
+
+\authorname{Анисимов Виктор}
+\thesistitle{Автономная операционная система самооптимизации и самолечения}
+\speciality{ПРИКЛАДНАЯ ИНФОРМАТИКА}
+\group{IA2403}
+\supervisor{Croitor Mihail}
+\departmenthead{Capcelea Titu, doctor, conferențiar universitar}
+\yearofdefense{2026}
+
+\usepackage{tocloft}
+\usepackage{chngcntr}
+\usepackage{titlesec}
+\renewcommand{\thesection}{\Roman{section}}
+\counterwithin{subsection}{section}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\counterwithin{subsubsection}{subsection}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\titleformat{\section}[block]
+  {\normalfont\Large\bfseries\centering}
+  {\thesection}
+  {1em}
+  {}
+\titleformat{name=\section,numberless}[block]
+  {\normalfont\Large\bfseries\centering}
+  {}
+  {0pt}
+  {}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+\renewcommand{\cfttoctitlefont}{\hfill\bfseries}
+\renewcommand{\cftaftertoctitle}{\hfill\hfill}
+\renewcommand{\cftsecfont}{\normalfont\bfseries}
+\renewcommand{\cftsecpagefont}{\normalfont\bfseries}
+
+\usepackage{etoolbox}
+\gappto\captionsrussian{\renewcommand{\contentsname}{СОДЕРЖАНИЕ}}
+\makeatletter
+\renewenvironment{thebibliography}[1]
+     {\list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy\clubpenalty4000\widowpenalty4000%
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}%
+      \endlist}
+\makeatother
+
+\usepackage{xurl}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{xcolor}
+\definecolor{codebg}{HTML}{F7F7F7}
+\definecolor{codeframe}{HTML}{B8B8B8}
+\usepackage{caption}
+\usepackage{float}
+\usepackage[newfloat]{minted}
+\SetupFloatingEnvironment{listing}{name=Листинг}
+\setminted{
+  bgcolor=codebg,
+  breaklines=true,
+  frame=lines,
+  framesep=6pt,
+  framerule=0.4pt,
+  fontsize=\small,
+  linenos=true,
+  numbersep=8pt,
+  rulecolor=codeframe,
+  tabsize=2
+}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\emergencystretch=4em
+\tolerance=2000
+\hbadness=3000
+
+\begin{document}
+
+\maketitlepage
+\tableofcontents
+
+\clearpage
+\section*{СПИСОК ПРИНЯТЫХ СОКРАЩЕНИЙ}
+\addcontentsline{toc}{section}{СПИСОК ПРИНЯТЫХ СОКРАЩЕНИЙ}
+\input{sections/shortings}
+
+\clearpage
+\section*{ВВЕДЕНИЕ}
+\addcontentsline{toc}{section}{ВВЕДЕНИЕ}
+\input{sections/introduction}
+
+\clearpage
+\section{ПРОБЛЕМА СОСТАВЛЕНИЯ РАСПИСАНИЯ}
+\input{sections/theory}
+
+\clearpage
+\section{АЛГОРИТМЫ СОСТАВЛЕНИЯ РАСПИСАНИЯ}
+\subsection{Генетический алгоритм. (Genetic Algorithm)}
+\input{sections/GA}
+\subsection{Имитация отжига(Simulated Annealing)}
+\input{sections/SA}
+\subsection{Поиск с запретами (Tabu Search)}
+\input{sections/TS}
+\subsection{Программирование ограничений (Constraint Programming / CP-SAT)}
+\input{sections/CP_SAT}
+\subsection{Сравнительный анализ алгоритмов)}
+\input{sections/analyze}
+
+\clearpage
+\section*{ЗАКЛЮЧЕНИЕ}
+\addcontentsline{toc}{section}{ЗАКЛЮЧЕНИЕ}
+\input{sections/conclusion}
+
+\clearpage
+\phantomsection
+\renewcommand{\bibname}{БИБЛИОГРАФИЯ}
+\section*{БИБЛИОГРАФИЯ}
+\addcontentsline{toc}{section}{БИБЛИОГРАФИЯ}
+\input{sections/bibliography}
+
+\end{document}
